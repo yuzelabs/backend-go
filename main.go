@@ -2,14 +2,16 @@ package main
 
 import (
 	"os"
-	"yuzelabs/routes"
-	"yuzelabs/configs"
+
+	"yuzelabs/src/config"
+	"yuzelabs/src/routes"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func init() {
-	configs.load() 
+	config.LoadEnv()
 }
 
 func main() {
@@ -17,7 +19,7 @@ func main() {
 
 	e.Use(middleware.CORS())
 
-	routes.load(e)
+	routes.Load(e)
 
 	port := os.Getenv("PORT")
 
