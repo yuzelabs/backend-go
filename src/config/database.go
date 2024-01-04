@@ -4,33 +4,19 @@ import (
 	"log"
 	"os"
 
-	"yuzelabs/src/model"
-
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/gocraft/dbr/v2"
 )
 
-var db *gorm.DB
-
-func autoMigrate() {
-	db.AutoMigrate(&model.User{})
-}
-
-func connectDatabase() {
+func ConnectDatabase() *dbr.Connection {
 	var err error
 
 	url := os.Getenv("DATABASE_URL")
 
-	db, err = gorm.Open(mysql.Open(url), &gorm.Config{})
+	db, err := dbr.Open("mysql", url, nil)
 
 	if err != nil {
 		log.Fatal("Failed to connect to database", err)
-	}
-}
-
-func GetDatabase() *gorm.DB {
-	if db == nil {
-		log.Fatal("Database not initialized")
 	}
 
 	return db

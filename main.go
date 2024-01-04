@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	config.Init()
+	config.LoadEnv()
 }
 
 func main() {
@@ -19,7 +19,11 @@ func main() {
 
 	e.Use(middleware.CORS())
 
-	routes.Load(e)
+	db := config.ConnectDatabase()
+
+	defer db.Close()
+
+	routes.Load(e, db)
 
 	port := os.Getenv("PORT")
 
