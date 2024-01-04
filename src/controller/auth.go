@@ -8,7 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-var cookieName = "@yuze-nonce"
+var cookieName = "nonce"
 
 func AuthGenerateNonceController(c echo.Context) error {
 	nonce := service.AuthGenerateNonceUseCase()
