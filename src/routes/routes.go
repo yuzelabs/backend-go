@@ -11,9 +11,7 @@ import (
 func Load(e *echo.Echo, db *dbr.Connection) error {
 	e.GET("/docs/*", swagger.WrapHandler)
 
-	albums := e.Group("/albums")
-
-	albums.GET("", getAlbums)
+	auth(e)
 
 	return nil
 }
