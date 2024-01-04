@@ -1,4 +1,4 @@
-package routes
+package router
 
 import (
 	_ "yuzelabs/src/docs"

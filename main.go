@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"yuzelabs/src/config"
-	"yuzelabs/src/routes"
+	"yuzelabs/src/router"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -23,7 +23,7 @@ func main() {
 
 	defer db.Close()
 
-	routes.Load(e, db)
+	router.Load(e, db)
 
 	port := os.Getenv("PORT")
 
