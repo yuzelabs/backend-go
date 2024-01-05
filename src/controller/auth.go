@@ -18,15 +18,12 @@ func AuthGenerateNonceController(c echo.Context) error {
 
 	cookie := new(http.Cookie)
 	cookie.Name = cookieName
-	cookie.Path = "/"
 	cookie.Value = nonce
-	cookie.Expires = time.Now().Add(24 * time.Hour)
-	cookie.HttpOnly = true
+	cookie.Expires = time.Now().Add(30 * time.Second)
+
 	c.SetCookie(cookie)
 
-	data := map[string]string{"nonce": nonce}
-
-	return c.JSON(http.StatusOK, data)
+	return c.JSON(http.StatusOK, map[string]string{"nonce": nonce})
 }
 
 func AuthVerifyMessageController(c echo.Context) (err error) {
@@ -62,10 +59,8 @@ func AuthVerifyMessageController(c echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusBadRequest, errValid.Error())
 	}
 
-	nonce := &cookie.Value
-
 	var publicKey *ecdsa.PublicKey
-	publicKey, errSiwe = message.Verify(payload.Signature, &payload.Domain, nonce, nil)
+	publicKey, errSiwe = message.Verify(payload.Signature, nil, &cookie.Value, nil)
 
 	if errSiwe != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errSiwe.Error())
