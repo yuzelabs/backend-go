@@ -1,27 +1,15 @@
 package controller
 
 import (
-	"crypto/ecdsa"
-	"fmt"
 	"net/http"
-	"time"
 	"yuzelabs/src/service"
 
 	"github.com/labstack/echo/v4"
 	"github.com/spruceid/siwe-go"
 )
 
-var cookieName = "nonce"
-
 func AuthGenerateNonceController(c echo.Context) error {
 	nonce := service.AuthGenerateNonceUseCase()
-
-	cookie := new(http.Cookie)
-	cookie.Name = cookieName
-	cookie.Value = nonce
-	cookie.Expires = time.Now().Add(30 * time.Second)
-
-	c.SetCookie(cookie)
 
 	return c.JSON(http.StatusOK, map[string]string{"nonce": nonce})
 }
@@ -37,12 +25,10 @@ func AuthVerifyMessageController(c echo.Context) (err error) {
 		return err
 	}
 
-	cookie, err := c.Cookie(cookieName)
-
 	if err != nil {
-		data := map[string]string{"message": "Nonce not found"}
+		data := map[string]string{"message": "Generate a signature first"}
 
-		return c.JSON(http.StatusNotFound, data)
+		return c.JSON(http.StatusBadRequest, data)
 	}
 
 	var message *siwe.Message
@@ -59,14 +45,15 @@ func AuthVerifyMessageController(c echo.Context) (err error) {
 		return echo.NewHTTPError(http.StatusBadRequest, errValid.Error())
 	}
 
-	var publicKey *ecdsa.PublicKey
-	publicKey, errSiwe = message.Verify(payload.Signature, nil, &cookie.Value, nil)
+	nonce := message.GetNonce()
+	domain := message.GetDomain()
+	address := message.GetAddress()
+
+	_, errSiwe = message.Verify(payload.Signature, &domain, &nonce, nil)
 
 	if errSiwe != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, errSiwe.Error())
 	}
 
-	fmt.Println(publicKey)
-
-	return c.JSON(http.StatusOK, map[string]string{"data": "Ok"})
+	return c.JSON(http.StatusOK, map[string]string{"data": address.String()})
 }
