@@ -5,11 +5,18 @@ import (
 	"yuzelabs/src/service"
 
 	"github.com/labstack/echo/v4"
-	"github.com/spruceid/siwe-go"
 )
+
+var cookieName = "nonce"
 
 func AuthGenerateNonceController(c echo.Context) error {
 	nonce := service.AuthGenerateNonceUseCase()
+
+	cookie := new(http.Cookie)
+	cookie.Name = cookieName
+	cookie.Value = nonce
+
+	c.SetCookie(cookie)
 
 	return c.JSON(http.StatusOK, map[string]string{"nonce": nonce})
 }
@@ -25,35 +32,19 @@ func AuthVerifyMessageController(c echo.Context) (err error) {
 		return err
 	}
 
+	cookie, err := c.Cookie(cookieName)
+
 	if err != nil {
 		data := map[string]string{"message": "Generate a signature first"}
 
 		return c.JSON(http.StatusBadRequest, data)
 	}
 
-	var message *siwe.Message
-	var errSiwe error
-	message, errSiwe = siwe.ParseMessage(payload.Message)
+	err = service.AuthVerifyMessageUseCase(payload.Signature, payload.Message, &cookie.Value)
 
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errSiwe.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	_, errValid := message.ValidNow()
-
-	if errValid != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errValid.Error())
-	}
-
-	nonce := message.GetNonce()
-	domain := message.GetDomain()
-	address := message.GetAddress()
-
-	_, errSiwe = message.Verify(payload.Signature, &domain, &nonce, nil)
-
-	if errSiwe != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, errSiwe.Error())
-	}
-
-	return c.JSON(http.StatusOK, map[string]string{"data": address.String()})
+	return c.JSON(http.StatusOK, map[string]string{"data": "Ok"})
 }

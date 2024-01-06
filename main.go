@@ -34,7 +34,8 @@ func main() {
 	e.Use(middleware.Logger())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
+		AllowOrigins:     []string{"http://localhost:3000"},
+		AllowCredentials: true,
 	}))
 
 	db := config.ConnectDatabase()
