@@ -1,10 +1,6 @@
 package service
 
-import (
-	"fmt"
-
-	siwe "github.com/spruceid/siwe-go"
-)
+import siwe "github.com/spruceid/siwe-go"
 
 var (
 	siweErr     error
@@ -38,7 +34,7 @@ func AuthVerifyMessageUseCase(signature string, message string, nonce *string) e
 
 	address := siweMessage.GetAddress()
 
-	fmt.Println(address)
+	FindUserByAddress(address.String())
 
 	return nil
 }
